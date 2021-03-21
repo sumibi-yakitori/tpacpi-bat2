@@ -17,7 +17,7 @@ Installation
 ------------
 
 - `install.pl` installs `acpi_call` from git and copies `tpacpi-bat` to /usr/bin
-- `acpi_call` is required (https://github.com/teleshoes/acpi_call.git)
+- `acpi_call` is required (https://github.com/nix-community/acpi_call.git)
 - `tpacpi-bat` has no other requirements besides perl; put it where you like
 
 Startup systemd service
