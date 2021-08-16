@@ -61,7 +61,7 @@ fn install_self() -> Result {
   run(&["sudo", "cp", name, "/usr/bin"])?;
   run(&[
     "echo",
-    &format!("@reboot /usr/bin/{}", name),
+    &format!("@reboot /usr/bin/{} --apply", name),
     "|",
     "sudo",
     "crontab",
