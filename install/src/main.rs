@@ -1,8 +1,9 @@
 use std::{
   error::Error,
   ffi::OsStr,
+  io::Write,
   path::{Path, PathBuf},
-  process::ExitStatus,
+  process::{Command, ExitStatus, Stdio},
   str::FromStr,
 };
 
@@ -59,13 +60,28 @@ fn create_dependent_repo(local_repo_path: impl AsRef<Path>) -> Result {
 fn install_self() -> Result {
   let name = std::env!("CARGO_CRATE_NAME");
   run(&["sudo", "cp", name, "/usr/bin"])?;
-  run(&[
-    "echo",
-    &format!("@reboot /usr/bin/{} --apply", name),
-    "|",
-    "sudo",
-    "crontab",
-  ])?;
+
+  let upstream_stdout = Command::new("sudo")
+    .arg("crontab")
+    .arg("-l")
+    .stdout(Stdio::piped())
+    .spawn()?
+    .wait_with_output()?;
+  let mut content = String::from_utf8_lossy(&upstream_stdout.stdout).into_owned();
+  let job = format!("@reboot /usr/bin/{} --apply", name);
+  if content.lines().into_iter().all(|s| *s != job) {
+    content = format!("{}\n{}", content, job);
+  }
+  let mut process = Command::new("sudo")
+    .arg("crontab")
+    .arg("-")
+    .stdin(Stdio::piped())
+    .spawn()?;
+
+  let mut stdin = process.stdin.take().expect("unreachable");
+  stdin.write_all(content.as_bytes())?;
+  stdin.flush()?;
+  process.wait_with_output()?;
 
   Ok(())
 }
@@ -77,7 +93,6 @@ fn install_tpacpi_bat() -> Result {
 }
 
 fn run(args: &[impl AsRef<OsStr>]) -> Result<ExitStatus> {
-  use std::process::Command;
   let (cmd, args) = args.split_at(1);
   match cmd.get(0) {
     Some(cmd) => Ok(Command::new(cmd).args(args).spawn()?.wait()?),
