@@ -18,6 +18,7 @@ fn main() -> Result {
       create_dependent_repo(&tpacpi_repo_path)?;
     }
     apply_kernel_mod(tpacpi_repo_path)?;
+    // beep()?;
   }
   else {
     println!("If you run this program on an OS other than linux, it will not do anything.");
@@ -70,7 +71,8 @@ fn install_self() -> Result {
   let mut content = String::from_utf8_lossy(&upstream_stdout.stdout).into_owned();
   let job = format!("@reboot /usr/bin/{} --apply", name);
   if content.lines().into_iter().all(|s| *s != job) {
-    content = format!("{}\n{}", content, job);
+    // A new line is required before EOF in crontab.
+    content = format!("{}\n{}\n", content, job);
   }
   let mut process = Command::new("sudo")
     .arg("crontab")
@@ -81,11 +83,18 @@ fn install_self() -> Result {
   let mut stdin = process.stdin.take().expect("unreachable");
   stdin.write_all(content.as_bytes())?;
   stdin.flush()?;
-  drop(stdin);
+  drop(stdin); // = Ctrl + D
   process.wait()?;
 
   Ok(())
 }
+
+// fn beep() -> Result {
+//   use beep::beep;
+//   beep(440)?;
+//   std::thread::sleep(std::time::Duration::from_millis(500));
+//   Ok(())
+// }
 
 fn install_tpacpi_bat() -> Result {
   run(&["sudo", "cp", "tpacpi-bat", "/usr/bin"])?;
