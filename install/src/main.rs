@@ -71,6 +71,7 @@ fn install_self() -> Result {
   let name = std::env!("CARGO_CRATE_NAME");
   run(&["sudo", "cp", name, "/usr/bin"])?;
 
+  // Add the job to the crontab of the superuser running with root privileges.
   let upstream_stdout = Command::new("sudo")
     .arg("crontab")
     .arg("-l")
