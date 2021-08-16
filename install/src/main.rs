@@ -19,6 +19,7 @@ fn main() -> Result {
     }
     apply_kernel_mod(tpacpi_repo_path)?;
     // beep()?;
+    // TODO: run(&["cat", "/sys/class/power_supply/BAT{}/capacity"])
   }
   else {
     println!("If you run this program on an OS other than linux, it will not do anything.");
@@ -27,11 +28,16 @@ fn main() -> Result {
 }
 
 fn apply_kernel_mod(tpacpi_repo_path: impl AsRef<Path>) -> Result {
+  let path = std::env::current_dir()?;
   std::env::set_current_dir(tpacpi_repo_path)?;
+
   run(&["make"])?;
   run(&["sudo", "make", "install"])?;
   run(&["sudo", "depmod"])?;
   run(&["sudo", "modprobe", "acpi_call"])?;
+
+  std::env::set_current_dir(path)?;
+
   Ok(())
 }
 
@@ -48,12 +54,15 @@ fn create_dependent_repo(local_repo_path: impl AsRef<Path>) -> Result {
     ])?;
   }
 
+  let path = std::env::current_dir()?;
   std::env::set_current_dir(local_repo_path)?;
 
   run(&["git", "fetch"])?;
   run(&["git", "reset", "HEAD", "--hard"])?;
   run(&["git", "clean", "-fd"])?;
   run(&["git", "checkout", "origin/master"])?;
+
+  std::env::set_current_dir(path)?;
 
   Ok(())
 }
