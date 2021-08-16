@@ -14,7 +14,7 @@ fn main() -> Result {
     if std::env::args().nth(1).is_none() {
       install_tpacpi_bat()?;
       install_self()?;
-      create_dependent_repo(tpacpi_repo_path)?;
+      create_dependent_repo(&tpacpi_repo_path)?;
     }
     apply_kernel_mod(tpacpi_repo_path)?;
   }
