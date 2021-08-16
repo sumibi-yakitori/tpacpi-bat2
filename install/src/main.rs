@@ -81,7 +81,8 @@ fn install_self() -> Result {
   let mut stdin = process.stdin.take().expect("unreachable");
   stdin.write_all(content.as_bytes())?;
   stdin.flush()?;
-  process.wait_with_output()?;
+  drop(stdin);
+  process.wait()?;
 
   Ok(())
 }
