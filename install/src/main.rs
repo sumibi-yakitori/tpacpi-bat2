@@ -11,14 +11,12 @@ type Result<T = ()> = std::result::Result<T, Box<dyn Error>>;
 fn main() -> Result {
   if cfg!(target_os = "linux") {
     let tpacpi_repo_path = PathBuf::from_str(&format!("/home/{}/acpi_call", whoami::username()))?;
-    if std::env::args().nth(1).is_some() {
-      apply_kernel_mod(tpacpi_repo_path)?;
-    }
-    else {
+    if std::env::args().nth(1).is_none() {
       install_tpacpi_bat()?;
-      create_dependent_repo(tpacpi_repo_path)?;
       install_self()?;
+      create_dependent_repo(tpacpi_repo_path)?;
     }
+    apply_kernel_mod(tpacpi_repo_path)?;
   }
   else {
     println!("If you run this program on an OS other than linux, it will not do anything.");
@@ -47,6 +45,8 @@ fn create_dependent_repo(local_repo_path: impl AsRef<Path>) -> Result {
       &local_repo_path.to_string_lossy(),
     ])?;
   }
+
+  std::env::set_current_dir(local_repo_path)?;
 
   run(&["git", "fetch"])?;
   run(&["git", "reset", "HEAD", "--hard"])?;
