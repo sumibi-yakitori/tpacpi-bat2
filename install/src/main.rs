@@ -11,7 +11,8 @@ type Result<T = ()> = std::result::Result<T, Box<dyn Error>>;
 
 fn main() -> Result {
   if cfg!(target_os = "linux") {
-    let tpacpi_repo_path = PathBuf::from_str(&format!("/home/{}/acpi_call", whoami::username()))?;
+    let user_name = std::env::args().nth(1).unwrap_or(whoami::username());
+    let tpacpi_repo_path = PathBuf::from_str(&format!("/home/{}/acpi_call", user_name))?;
     if std::env::args().nth(1).is_none() {
       install_tpacpi_bat()?;
       install_self()?;
@@ -54,7 +55,7 @@ fn create_dependent_repo(local_repo_path: impl AsRef<Path>) -> Result {
     ])?;
   }
 
-  let path = std::env::current_dir()?;
+  let path = std::env::current_dir()?.canonicalize()?;
   std::env::set_current_dir(local_repo_path)?;
 
   run(&["git", "fetch"])?;
