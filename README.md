@@ -16,16 +16,9 @@ Copyright 2011-2016 Elliot Wolk
 Installation
 ------------
 
-- `install.pl` installs `acpi_call` from git and copies `tpacpi-bat` to /usr/bin
-- `acpi_call` is required (https://github.com/nix-community/acpi_call.git)
-- `tpacpi-bat` has no other requirements besides perl; put it where you like
+`./tb_install`
 
-Startup systemd service
------------------------
 
-- Edit desired thresholds in `examples/tpacpi.conf.d`
-- Copy `examples/tpacpi.service` to systemd unit dir (`/usr/lib/systemd/system`)
-- Copy `tpacpi.conf.d` to `/etc/conf.d/tpacpi`
 
 Supported Hardware
 ------------------

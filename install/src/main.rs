@@ -15,6 +15,7 @@ fn main() -> Result {
     let tpacpi_repo_path = PathBuf::from_str(&format!("/home/{}/acpi_call", user_name))?;
     if std::env::args().nth(1).is_none() {
       install_tpacpi_bat()?;
+      install_tpacpi_service()?;
       install_self(user_name)?;
       create_dependent_repo(&tpacpi_repo_path)?;
     }
@@ -109,6 +110,17 @@ fn install_self(user_name: impl AsRef<str>) -> Result {
 
 fn install_tpacpi_bat() -> Result {
   run(&["sudo", "cp", "tpacpi-bat", "/usr/bin"])?;
+
+  Ok(())
+}
+
+fn install_tpacpi_service() -> Result {
+  run(&[
+    "sudo",
+    "cp",
+    "examples/tpacpi.service",
+    "/usr/lib/systemd/system/",
+  ])?;
 
   Ok(())
 }
