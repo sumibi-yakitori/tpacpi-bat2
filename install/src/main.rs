@@ -17,7 +17,7 @@ fn main() -> Result {
       install_self()?;
       create_dependent_repo(&tpacpi_repo_path)?;
     }
-    apply_kernel_mod(tpacpi_repo_path)?;
+    apply_kernel_mod(tpacpi_repo_path).expect("apply_kernel_mod");
     // beep()?;
     // TODO: run(&["cat", "/sys/class/power_supply/BAT{}/capacity"])
   }
@@ -28,7 +28,7 @@ fn main() -> Result {
 }
 
 fn apply_kernel_mod(tpacpi_repo_path: impl AsRef<Path>) -> Result {
-  let path = std::env::current_dir()?;
+  let path = std::env::current_dir()?.canonicalize()?;
   std::env::set_current_dir(tpacpi_repo_path)?;
 
   run(&["make"])?;
