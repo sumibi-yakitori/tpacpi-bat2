@@ -15,7 +15,7 @@ fn main() -> Result {
     let tpacpi_repo_path = PathBuf::from_str(&format!("/home/{}/acpi_call", user_name))?;
     if std::env::args().nth(1).is_none() {
       install_tpacpi_bat()?;
-      install_self()?;
+      install_self(user_name)?;
       create_dependent_repo(&tpacpi_repo_path)?;
     }
     apply_kernel_mod(tpacpi_repo_path).expect("apply_kernel_mod");
@@ -68,7 +68,7 @@ fn create_dependent_repo(local_repo_path: impl AsRef<Path>) -> Result {
   Ok(())
 }
 
-fn install_self() -> Result {
+fn install_self(user_name: impl AsRef<str>) -> Result {
   let name = std::env!("CARGO_CRATE_NAME");
   run(&["sudo", "cp", name, "/usr/bin"])?;
 
@@ -80,7 +80,7 @@ fn install_self() -> Result {
     .spawn()?
     .wait_with_output()?;
   let mut content = String::from_utf8_lossy(&upstream_stdout.stdout).into_owned();
-  let job = format!("@reboot /usr/bin/{} --apply", name);
+  let job = format!("@reboot /usr/bin/{} {}", name, user_name.as_ref());
   if content.lines().into_iter().all(|s| *s != job) {
     // A new line is required before EOF in crontab.
     content = format!("{}\n{}\n", content, job);
