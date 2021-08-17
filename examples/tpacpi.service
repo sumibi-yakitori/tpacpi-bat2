@@ -5,7 +5,7 @@ Description=sets battery thresholds
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/bin/tpacpi-bat -s ST 0 40
-ExecStart=/usr/bin/tpacpi-bat -s SP 0 80
+ExecStart=/usr/bin/tpacpi-bat -s SP 0 50
 ExecStop=/usr/bin/tpacpi-bat -s ST 0 0
 ExecStop=/usr/bin/tpacpi-bat -s SP 0 0
 
