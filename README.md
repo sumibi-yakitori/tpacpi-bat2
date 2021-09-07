@@ -1,3 +1,10 @@
+Forked: https://github.com/teleshoes/tpacpi-bat
+
+Kernel mod persistence is achieved by going through two reboots after a kernel update.
+
+---
+
+
 [![Flattr Button](http://api.flattr.com/button/button-static-50x60.png "Flattr This!")](https://flattr.com/thing/1577449 "tpacpi-bat")
 
 tpacpi-bat - ThinkPad ACPI Battery Util
