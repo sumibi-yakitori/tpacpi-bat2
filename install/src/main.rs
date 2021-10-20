@@ -1,5 +1,6 @@
+use anyhow::bail;
+use anyhow::Context;
 use std::{
-  error::Error,
   ffi::OsStr,
   io::Write,
   path::{Path, PathBuf},
@@ -7,7 +8,7 @@ use std::{
   str::FromStr,
 };
 
-type Result<T = ()> = std::result::Result<T, Box<dyn Error>>;
+type Result<T = ()> = anyhow::Result<T>;
 
 fn main() -> Result {
   if cfg!(target_os = "linux") {
@@ -19,7 +20,9 @@ fn main() -> Result {
       install_self(user_name)?;
       create_dependent_repo(&tpacpi_repo_path)?;
     }
-    apply_kernel_mod(tpacpi_repo_path).expect("apply_kernel_mod");
+    apply_kernel_mod(&tpacpi_repo_path)?;
+    // .with_context(|| format!("apply_kernel_mod: {:#?}", tpacpi_repo_path))?;
+
     // beep()?;
     // TODO: run(&["cat", "/sys/class/power_supply/BAT{}/capacity"])
   }
@@ -31,14 +34,16 @@ fn main() -> Result {
 
 fn apply_kernel_mod(tpacpi_repo_path: impl AsRef<Path>) -> Result {
   let path = std::env::current_dir()?.canonicalize()?;
-  std::env::set_current_dir(tpacpi_repo_path)?;
+  std::env::set_current_dir(&tpacpi_repo_path)
+    .with_context(|| format!("cd {:#?}", tpacpi_repo_path.as_ref()))?;
 
+  run(&["make", "clean"])?; // Cache causes problems when GCC version is upgraded
   run(&["make"])?;
   run(&["sudo", "make", "install"])?;
   run(&["sudo", "depmod"])?;
   run(&["sudo", "modprobe", "acpi_call"])?;
 
-  std::env::set_current_dir(path)?;
+  std::env::set_current_dir(&path).with_context(|| format!("cd {:#?}", path))?;
 
   Ok(())
 }
@@ -129,6 +134,6 @@ fn run(args: &[impl AsRef<OsStr>]) -> Result<ExitStatus> {
   let (cmd, args) = args.split_at(1);
   match cmd.get(0) {
     Some(cmd) => Ok(Command::new(cmd).args(args).spawn()?.wait()?),
-    None => Err("Invalid command".into()),
+    None => bail!("Invalid command"),
   }
 }
